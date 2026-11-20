@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render entry 2/3 for make.fun news-image-20261119 (agent 1).
 
-Concept: NAVY MASTHEAD, HERO 2+1, ANTHROPIC #3.
+Concept: NAVY MASTHEAD, HERO 3-ACROSS, COP31 #3, ANTHROPIC #4.
 Drawn from scratch with Pillow. Deterministic: no timestamps, no randomness.
 """
 import math
@@ -206,23 +206,26 @@ def flag_kr(d, x, y, w, h):
 
 
 # ---------------------------------------------------------------- persons
-def draw_person(d, cx, head_y, r, skin, hair, style, suit, tie, bottom=None):
+def draw_person(d, cx, head_y, r, skin, hair, style, suit, tie, bottom=None, s=1.0):
     """Simple faced figure: shoulders, shirt, tie, head, hair, face.
-    bottom: clip the body at this y (scene edge) so nothing spills below."""
-    bot = bottom if bottom is not None else head_y + 118
+    bottom: clip the body at this y (scene edge) so nothing spills below.
+    s: scale factor for narrow panels (shoulders/head shrink together)."""
+    r = r * s
+    bot = bottom if bottom is not None else head_y + 118 * s
+    sh = 54 * s
     # shoulders
-    d.rounded_rectangle([cx - 54, head_y + r + 4, cx + 54, min(head_y + 118, bot)],
+    d.rounded_rectangle([cx - sh, head_y + r + 4, cx + sh, min(head_y + 118 * s, bot)],
                         radius=16, fill=suit, outline=INK, width=2)
     # shirt
-    sh_bot = min(head_y + r + 36, bot)
-    d.polygon([(cx - 15, head_y + r + 6), (cx + 15, head_y + r + 6),
+    sh_bot = min(head_y + r + 36 * s, bot)
+    d.polygon([(cx - 15 * s, head_y + r + 6), (cx + 15 * s, head_y + r + 6),
                (cx, sh_bot)], fill=(246, 246, 240), outline=INK)
     # tie
-    tie_tip = min(head_y + r + 64, bot - 6)
-    tie_mid = min(head_y + r + 50, tie_tip - 8)
-    d.polygon([(cx - 6, head_y + r + 14), (cx + 6, head_y + r + 14),
-               (cx + 8, tie_mid), (cx, tie_tip),
-               (cx - 8, tie_mid)], fill=tie)
+    tie_tip = min(head_y + r + 64 * s, bot - 6)
+    tie_mid = min(head_y + r + 50 * s, tie_tip - 8)
+    d.polygon([(cx - 6 * s, head_y + r + 14), (cx + 6 * s, head_y + r + 14),
+               (cx + 8 * s, tie_mid), (cx, tie_tip),
+               (cx - 8 * s, tie_mid)], fill=tie)
     # head
     d.ellipse([cx - r, head_y - r, cx + r, head_y + r],
               fill=skin, outline=INK, width=2)
@@ -231,7 +234,7 @@ def draw_person(d, cx, head_y, r, skin, hair, style, suit, tie, bottom=None):
         d.pieslice([cx - r - 1, head_y - r - 2, cx + r + 1, head_y + r * 0.35],
                    180, 360, fill=hair, outline=INK)
         d.polygon([(cx - r, head_y - r * 0.25), (cx + r, head_y - r * 0.55),
-                   (cx + r + 6, head_y - r * 0.15), (cx - r + 4, head_y + r * 0.05)],
+                   (cx + r + 6 * s, head_y - r * 0.15), (cx - r + 4 * s, head_y + r * 0.05)],
                   fill=hair)
     elif style == "xi":  # black neat side part
         d.pieslice([cx - r - 1, head_y - r - 2, cx + r + 1, head_y + r * 0.30],
@@ -239,42 +242,46 @@ def draw_person(d, cx, head_y, r, skin, hair, style, suit, tie, bottom=None):
         d.polygon([(cx - r, head_y - r * 0.30), (cx + r, head_y - r * 0.30),
                    (cx + r, head_y - r * 0.05), (cx - r, head_y - r * 0.05)],
                   fill=hair)
-        d.line([cx + 2, head_y - r, cx + 6, head_y - r * 0.30], fill=hair, width=3)
+        d.line([cx + 2 * s, head_y - r, cx + 6 * s, head_y - r * 0.30], fill=hair, width=3)
     else:  # putin: light short, receding
         d.pieslice([cx - r - 1, head_y - r - 2, cx + r + 1, head_y - r * 0.05],
                    180, 360, fill=hair, outline=INK)
     # brows + eyes + nose + smile
-    d.line([cx - 13, head_y - 9, cx - 5, head_y - 10], fill=INK, width=2)
-    d.line([cx + 5, head_y - 10, cx + 13, head_y - 9], fill=INK, width=2)
-    d.ellipse([cx - 10, head_y - 5, cx - 6, head_y - 1], fill=INK)
-    d.ellipse([cx + 6, head_y - 5, cx + 10, head_y - 1], fill=INK)
-    d.line([cx, head_y + 1, cx - 1, head_y + 8], fill=(150, 110, 80), width=2)
-    d.arc([cx - 9, head_y + 6, cx + 9, head_y + 18], 20, 160, fill=INK, width=2)
+    d.line([cx - 13 * s, head_y - 9 * s, cx - 5 * s, head_y - 10 * s], fill=INK, width=2)
+    d.line([cx + 5 * s, head_y - 10 * s, cx + 13 * s, head_y - 9 * s], fill=INK, width=2)
+    d.ellipse([cx - 10 * s, head_y - 5 * s, cx - 6 * s, head_y - 1 * s], fill=INK)
+    d.ellipse([cx + 6 * s, head_y - 5 * s, cx + 10 * s, head_y - 1 * s], fill=INK)
+    d.line([cx, head_y + 1 * s, cx - 1 * s, head_y + 8 * s], fill=(150, 110, 80), width=2)
+    d.arc([cx - 9 * s, head_y + 6 * s, cx + 9 * s, head_y + 18 * s], 20, 160, fill=INK, width=2)
 
 
 # ---------------------------------------------------------------- hero scenes
 def scene_apec(d, x, y, w, h):
-    """APEC summit: navy wall, three flags, three faced leaders at a table."""
+    """APEC summit: navy wall, three flags, three faced leaders at a table.
+    Width-aware: narrow hero panels shrink the figures (s=0.8) so the
+    three leaders fit without overlapping."""
     d.rectangle([x, y, x + w, y + h], fill=NAVY)
     # wall panel + gold trim
     d.rectangle([x + 10, y + 8, x + w - 10, y + h - 8], outline=GOLD, width=1)
     # flags on the wall
-    flag_us(d, x + 52, y + 22, 62, 38)
+    flag_us(d, x + 28, y + 22, 62, 38)
     flag_cn(d, x + w // 2 - 31, y + 22, 62, 38)
-    flag_ru(d, x + w - 114, y + 22, 62, 38)
+    flag_ru(d, x + w - 90, y + 22, 62, 38)
     # table
     d.rectangle([x, y + h - 46, x + w, y + h], fill=WOOD, outline=INK, width=2)
     d.line([x, y + h - 46, x + w, y + h - 46], fill=GOLD_L, width=2)
     # leaders
-    head_y = y + h - 78
-    draw_person(d, x + 118, head_y, 27, SKIN, (232, 196, 90), "trump",
-                NAVY_DARK, RED_BRIGHT, bottom=y + h)
-    draw_person(d, x + w // 2, head_y, 27, SKIN2, (30, 28, 26), "xi",
-                (24, 24, 24), RED_BRIGHT, bottom=y + h)
-    draw_person(d, x + w - 118, head_y, 27, SKIN, (214, 200, 170), "putin",
-                (52, 54, 60), BLUE, bottom=y + h)
-    # nameplates on the table
-    for cx, name in [(x + 118, "TRUMP"), (x + w // 2, "XI"), (x + w - 118, "PUTIN")]:
+    head_y = y + h - 72
+    s = 0.8 if w < 400 else 1.0
+    leaders = [
+        (x + int(w * 0.20), "TRUMP", SKIN, (232, 196, 90), "trump", NAVY_DARK, RED_BRIGHT),
+        (x + w // 2, "XI", SKIN2, (30, 28, 26), "xi", (24, 24, 24), RED_BRIGHT),
+        (x + int(w * 0.80), "PUTIN", SKIN, (214, 200, 170), "putin", (52, 54, 60), BLUE),
+    ]
+    for cx, name, skin, hair, style, suit, tie in leaders:
+        draw_person(d, cx, head_y, 27, skin, hair, style, suit, tie,
+                    bottom=y + h, s=s)
+        # nameplate on the table
         f = SANS_B(11)
         tw = d.textlength(name, font=f)
         d.rectangle([cx - tw / 2 - 8, y + h - 30, cx + tw / 2 + 8, y + h - 12],
@@ -299,8 +306,8 @@ def scene_icj(d, x, y, w, h):
         d.rectangle([cx - 4, y + 30, cx + 4, y + h - 12], fill=(240, 232, 210),
                     outline=INK, width=1)
     d.rectangle([x + 150, y + 42, x + 174, y + h - 12], fill=(60, 44, 34), outline=INK, width=1)
-    # scales of justice
-    bx, by = x + 300, y + 18
+    # scales of justice, standing on the ground at the right
+    bx, by = x + 300, y + h - 52
     d.line([bx, by, bx, by + 34], fill=GOLD_D, width=3)
     d.line([bx - 22, by + 4, bx + 22, by + 4], fill=GOLD_D, width=3)
     d.polygon([(bx - 26, by + 4), (bx - 14, by + 4), (bx - 20, by + 16)], fill=GOLD)
@@ -315,31 +322,70 @@ def scene_icj(d, x, y, w, h):
     d.text((x + w - tw - 17, y + 9), "9–6", font=f, fill=(255, 255, 255))
 
 
-def scene_anthropic(d, x, y, w, h):
-    """Nasdaq debut: rising green bars, red arrow, +17%."""
+def scene_anthropic(d, img, x, y, w, h):
+    """Nasdaq debut: rising green bars with a red arrow. Width-aware so it
+    also works as a narrow secondary card (no in-scene +17%: the headline
+    directly below already carries it)."""
     d.rectangle([x, y, x + w, y + h], fill=NAVY_DARK)
-    d.text((x + 10, y + 6), "ANT · NASDAQ", font=SANS_B(11), fill=(255, 255, 255))
-    d.text((x + 10, y + 22), "FIRST DAY · IPO $83", font=SANS(9), fill=GOLD_L)
-    # bars
-    base = y + h - 8
-    bars = [10, 16, 14, 24, 30, 40]
-    bw = 26
-    for i, bh in enumerate(bars):
-        bx = x + 150 + i * (bw + 6)
-        d.rectangle([bx, base - bh, bx + bw, base], fill=TEAL, outline=INK, width=1)
-    # arrow
-    d.line([x + 148, base - 12, x + 190, base - 26, x + 232, base - 20,
-            x + 282, base - 40, x + 318, base - 46], fill=RED_BRIGHT, width=3)
-    d.polygon([(x + 318, base - 46), (x + 306, base - 44), (x + 314, base - 34)],
-              fill=RED_BRIGHT)
-    # +17%
-    d.text((x + w - 108, y + 8), "+17%", font=SERIF_B(30), fill=GOLD_L)
-    d.text((x + w - 108, y + 42), "ON DEBUT", font=SANS_B(10), fill=(255, 255, 255))
+    d.text((x + 8, y + 4), "ANT · NASDAQ", font=SANS_B(10), fill=(255, 255, 255))
+    f_fd = SANS(8)
+    fd = "FIRST DAY"
+    d.text((x + w - 8 - d.textlength(fd, font=f_fd), y + 5), fd,
+           font=f_fd, fill=GOLD_L)
+    # bars along the bottom
+    base = y + h - 3
+    n = 6
+    gap = 4
+    bw = (w - 16 - (n - 1) * gap) // n
+    hs = [10, 16, 14, 24, 30, 40]
+    maxh = h - 18
+    tops = []
+    for i, bh in enumerate(hs):
+        b = int(bh * maxh / 40)
+        bx = x + 8 + i * (bw + gap)
+        d.rectangle([bx, base - b, bx + bw, base], fill=TEAL, outline=INK, width=1)
+        tops.append((bx + bw // 2, base - b - 2))
+    # red arrow over the bar tops
+    d.line(tops, fill=RED_BRIGHT, width=3, joint="curve")
+    ex, ey = tops[-1]
+    d.polygon([(ex, ey), (ex - 10, ey + 1), (ex - 4, ey + 8)], fill=RED_BRIGHT)
 
 
 # ---------------------------------------------------------------- card scenes
-def scene_cop31(d, img, x, y, w, h):
+def scene_cop31(d, img, x, y, w, h, big=False):
+    """COP31 draft: globe + thermometer + struck-through FOSSIL FUELS doc.
+    big=True (hero size): larger globe/thermometer and a fuller document
+    with the aid figure and Friday close from the deck."""
     d.rectangle([x, y, x + w, y + h], fill=(58, 130, 120))
+    if big:
+        # globe
+        cx, cy, r = x + 42, y + h // 2, 24
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(70, 140, 200),
+                  outline=INK, width=2)
+        d.ellipse([cx - 11, cy - 17, cx + 3, cy - 3], fill=GREEN)
+        d.ellipse([cx - 3, cy + 6, cx + 17, cy + 18], fill=GREEN)
+        # thermometer
+        tx = x + 82
+        d.rounded_rectangle([tx, y + 8, tx + 10, y + h - 14], radius=5,
+                            fill=(245, 245, 240), outline=INK, width=1)
+        d.ellipse([tx - 4, y + h - 20, tx + 14, y + h - 2], fill=RED_BRIGHT,
+                  outline=INK, width=1)
+        d.rectangle([tx + 3, y + 14, tx + 7, y + h - 14], fill=RED_BRIGHT)
+        # document
+        dx = x + 106
+        d.rectangle([dx, y + 8, x + w - 10, y + h - 8], fill=(250, 244, 228),
+                    outline=INK, width=1)
+        d.text((dx + 8, y + 12), "DRAFT DEAL · 19 NOV", font=SANS_B(9), fill=INK)
+        d.text((dx + 8, y + 28), "FOSSIL FUELS", font=SANS_B(13), fill=INK)
+        d.line([dx + 8, y + 36, dx + 108, y + 36], fill=RED_BRIGHT, width=3)
+        d.text((dx + 8, y + 46), "$120BN AID CUT", font=SANS_B(12), fill=RED_BRIGHT)
+        d.text((dx + 8, y + 68), "ADAPTATION AID: NO FIGURE", font=SANS_B(10), fill=INK)
+        d.text((dx + 8, y + 86), "TALKS END FRIDAY", font=SANS_B(10), fill=INK)
+        for ly in (104, 116, 128):
+            if ly < h - 14:
+                d.line([dx + 8, y + ly, x + w - 18, y + ly],
+                       fill=(180, 170, 150), width=1)
+        return
     # globe
     cx, cy, r = x + 34, y + h // 2, 17
     d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(70, 140, 200), outline=INK, width=1)
@@ -528,7 +574,7 @@ def scene_canberra(d, img, x, y, w, h):
 # ---------------------------------------------------------------- data
 # region per story (verified against the brief's region list)
 REGIONS = {
-    1: "ASIA", 2: "EUROPE", 3: "AMERICAS", 4: "GLOBAL", 5: "EUROPE",
+    1: "ASIA", 2: "EUROPE", 3: "GLOBAL", 4: "AMERICAS", 5: "EUROPE",
     6: "MIDDLE EAST", 7: "ASIA", 8: "AMERICAS", 9: "GLOBAL", 10: "ASIA",
     11: "AMERICAS", 12: "AFRICA", 13: "OCEANIA", 14: "ASIA", 15: "ASIA",
     16: "ASIA", 17: "ASIA", 18: "MIDDLE EAST", 19: "MIDDLE EAST",
@@ -541,9 +587,10 @@ REGION_TOTALS = {"ASIA": 7, "MIDDLE EAST": 3, "EUROPE": 7, "AFRICA": 5,
 
 # secondary cards 4-13: (num, kicker, headline, deck, scene fn, tag)
 CARDS = [
-    (4, "COP31 · ANTALYA", "COP31 draft drops fossil fuels and $120bn aid goal",
-     "Slimmer text has no figure for adaptation aid. Talks end Friday. — Reuters · AFP",
-     scene_cop31, "REPORTED"),
+    (4, "NEW YORK · MARKETS", "Anthropic jumps 17% on Nasdaq debut",
+     "Shares in the Claude maker rise 17% on the first day of trading; the "
+     "record $81.3bn offering is the largest IPO on record. — AP · Reuters",
+     scene_anthropic, "REPORTED"),
     (5, "CRIMEA · WAR", "Ukraine hits Crimea bridge again",
      "Third strike in a week halts trains to Russia. — Euronews",
      scene_crimea, "REPORTED"),
@@ -685,12 +732,13 @@ CONTINENTS = [
 ]
 
 # (story, lon, lat, badge offset lon/lat or None)
+# Stories 9 (GTA VI, worldwide) and 33 (Space) have no pin.
 PINS = [
     (1, 114.1, 22.5, None),      # Shenzhen
     (2, 4.3, 52.1, None),        # The Hague
-    (3, -74.0, 40.7, None),      # New York
-    (4, 30.7, 36.9, None),       # Antalya
-    (5, 33.5, 45.5, (38.5, 49.5)),  # Crimea (badge offset: Antalya is close)
+    (3, 30.7, 36.9, None),       # Antalya
+    (4, -74.0, 40.7, None),      # New York
+    (5, 33.5, 45.5, (40.5, 51.5)),  # Crimea (badge offset: Antalya is close)
     (6, 46.7, 24.6, None),       # Riyadh
     (7, 84.5, 20.5, None),       # Odisha
     (8, -45.0, 70.0, None),      # Greenland
@@ -762,12 +810,12 @@ def card(d, img, x, y, w, h, num, kicker, headline, deck, scene, tag):
                         outline=tag_color, width=1)
     d.text((x + w - tw, y + 48), tag, font=SANS_B(7), fill=tag_color)
     yy = y + 61
-    for ln in wrap(d, headline, SERIF_B(12), w - 12):
-        d.text((x + 6, yy), ln, font=SERIF_B(12), fill=INK)
-        yy += 15
+    for ln in wrap(d, headline, SERIF_B(13), w - 12):
+        d.text((x + 6, yy), ln, font=SERIF_B(13), fill=INK)
+        yy += 16
     yy += 1
-    for ln in wrap(d, deck, SANS(8), w - 12):
-        d.text((x + 6, yy), ln, font=SANS(8), fill=INK_SOFT)
+    for ln in wrap(d, deck, SANS(9), w - 12):
+        d.text((x + 6, yy), ln, font=SANS(9), fill=INK_SOFT)
         yy += 11
     return yy
 
@@ -846,68 +894,64 @@ def render():
         d.text((x0 + (cw - 2 - d.textlength(label, font=f_r)) / 2, 200),
                label, font=f_r, fill=(255, 255, 255))
 
-    # ---- 4. hero zone 2+1
-    # APEC wide left
-    ax, ay, aw, ah = 14, 220, 554, 274
-    d.rectangle([ax, ay, ax + aw, ay + ah], fill=PAPER, outline=INK, width=1)
-    # gold banner
+    # ---- 4. hero zone: 3 panels across, equal width (no stacked column)
+    hy, hh = 220, 260
+    hw = [327, 327, 328]
+    hx = [14, 348, 682]
+
+    # hero 1: APEC (gold banner + scene + text)
+    ax, ay, aw = hx[0], hy, hw[0]
+    d.rectangle([ax, ay, ax + aw, ay + hh], fill=PAPER, outline=INK, width=1)
     d.rectangle([ax + 1, ay + 1, ax + aw - 1, ay + 23], fill=GOLD)
-    d.text((ax + 10, ay + 5), "APEC 2026 · SHENZHEN", font=SANS_B(12), fill=NAVY)
-    right_b = "FIRST US–CHINA–RUSSIA SUMMIT"
-    d.text((ax + aw - 10 - d.textlength(right_b, font=SANS_B(12)), ay + 5),
-           right_b, font=SANS_B(12), fill=NAVY)
-    scene_apec(d, ax + 1, ay + 24, aw - 2, 134)
-    hero_text(d, ax, ay + 158, aw, 1, "SHENZHEN · SUMMIT",
+    d.text((ax + 10, ay + 5), "APEC 2026 · SHENZHEN", font=SANS_B(10), fill=NAVY)
+    right_b = "US–CHINA–RUSSIA SUMMIT"
+    d.text((ax + aw - 10 - d.textlength(right_b, font=SANS_B(10)), ay + 5),
+           right_b, font=SANS_B(10), fill=NAVY)
+    scene_apec(d, ax + 1, ay + 24, aw - 2, 120)
+    hero_text(d, ax, ay + 144, aw, 1, "SHENZHEN · SUMMIT",
               "Trump, Xi and Putin hold first three-way summit",
               "The U.S., Chinese and Russian leaders met for 90 minutes at Kylin "
               "Villa and issued a 'Declaration on Peace' on nuclear risk and UN "
               "reform. — Reuters · AP · Xinhua",
               "REPORTED", hsize=19)
 
-    # ICJ top right
-    ix, iy, iw = 576, 220, 434
-    d.rectangle([ix, iy, ix + iw, iy + 132], fill=PAPER, outline=INK, width=1)
-    scene_icj(d, ix + 1, iy + 1, iw - 2, 62)
-    hero_text(d, ix, iy + 63, iw, 2, "THE HAGUE · JUSTICE",
+    # hero 2: ICJ
+    ix, iy, iw = hx[1], hy, hw[1]
+    d.rectangle([ix, iy, ix + iw, iy + hh], fill=PAPER, outline=INK, width=1)
+    scene_icj(d, ix + 1, iy + 1, iw - 2, 143)
+    hero_text(d, ix, iy + 144, iw, 2, "THE HAGUE · JUSTICE",
               "World Court: Myanmar committed genocide",
               "By 9 votes to 6 the ICJ found Myanmar guilty of genocide against "
               "the Rohingya and ordered reparations. — Al Jazeera · UN News",
               "REPORTED", hsize=15)
 
-    # Anthropic bottom right
-    nx, ny = 576, 362
-    d.rectangle([nx, ny, nx + iw, ny + 132], fill=PAPER, outline=INK, width=1)
-    scene_anthropic(d, nx + 1, ny + 1, iw - 2, 62)
-    hero_text(d, nx, ny + 63, iw, 3, "NEW YORK · MARKETS",
-              "Anthropic jumps 17% on Nasdaq debut",
-              "Shares in the Claude maker rise 17% on the first day of trading; "
-              "the record $81.3bn offering is the largest IPO on record. — AP · Reuters",
+    # hero 3: COP31 (promoted from card #4)
+    cx3, cy3, cw3 = hx[2], hy, hw[2]
+    d.rectangle([cx3, cy3, cx3 + cw3, cy3 + hh], fill=PAPER, outline=INK, width=1)
+    scene_cop31(d, img, cx3 + 1, cy3 + 1, cw3 - 2, 143, big=True)
+    hero_text(d, cx3, cy3 + 144, cw3, 3, "ANTALYA · CLIMATE",
+              "COP31 draft drops fossil fuels and $120bn aid goal",
+              "The slimmer text has no figure for adaptation aid. Talks are due "
+              "to end on Friday. — Reuters · AFP",
               "REPORTED", hsize=15)
 
-    # ---- 5. ticker
-    d.rectangle([14, 500, 1010, 522], fill=NAVY)
-    tick = ("ANTHROPIC +17% ON NASDAQ DEBUT  ·  GTA VI OUT TODAY  ·  "
-            "COP31 TALKS ENTER FINAL DAY  ·  CYCLONE AKVAN NEARS INDIA")
-    f_t = SANS_B(12)
-    d.text(((W - d.textlength(tick, font=f_t)) / 2, 505), tick, font=f_t,
-           fill=(255, 255, 255))
-
-    # ---- 6. secondary grid 2 x 5
+    # ---- 5. secondary grid 2 x 5 (ticker removed entirely)
     gw = (996 - 4 * 7) / 5
     for row in range(2):
         for col in range(5):
             num, kicker, head, deck, scene, tag = CARDS[row * 5 + col]
             cx = 14 + col * (gw + 7)
-            cy = 528 + row * 124
-            card(d, img, cx, cy, gw, 116, num, kicker, head, deck, scene, tag)
+            cy = 486 + row * 146
+            card(d, img, cx, cy, gw, 140, num, kicker, head, deck, scene, tag)
 
-    # ---- 7. bottom: map + briefs
+    # ---- 6. bottom: map + briefs
     d.text((14, 778), "WHERE IT HAPPENED", font=SANS_B(13), fill=INK)
     f_m = SANS_O(9)
     d.text((384 - d.textlength("numbers match the stories", font=f_m), 781),
            "numbers match the stories", font=f_m, fill=GREY)
     draw_map(d, 14, 798, 370, 118)
-    d.text((14, 920), "9 GTA VI worldwide · 33 Space", font=SANS_O(9), fill=GREY)
+    d.text((14, 920), "No pin: GTA VI (worldwide) · Space (no location)",
+           font=SANS_O(9), fill=GREY)
 
     bx = 396
     d.text((bx, 778), "ALSO ON THURSDAY 19 NOVEMBER 2026", font=SANS_B(13), fill=INK)
@@ -922,7 +966,7 @@ def render():
         yy = 802 + row * 13.4
         draw_brief(d, xx, yy, colw, num, place, sent, src)
 
-    # ---- 8. footer DATE CHECK
+    # ---- 7. footer DATE CHECK
     d.rounded_rectangle([14, 940, 1010, 994], radius=4, outline=RED, width=1)
     f_dc = SANS(10)
     lines = wrap(d, DATE_CHECK, f_dc, 968)
