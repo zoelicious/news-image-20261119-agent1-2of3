@@ -67,7 +67,8 @@ def SERIF(s):
 
 
 def SERIF_I(s):
-    return F("DejaVuSerif-Italic.ttf", s)
+    # VM lacks DejaVuSerif-Italic.ttf; regular serif is the local fallback
+    return F("DejaVuSerif.ttf", s)
 
 
 def SANS_B(s):
@@ -79,19 +80,19 @@ def SANS(s):
 
 
 def SANS_O(s):
-    return F("DejaVuSans-Oblique.ttf", s)
+    return F("DejaVuSans.ttf", s)
 
 
 def COND(s):
-    return F("DejaVuSansCondensed.ttf", s)
+    return F("DejaVuSans.ttf", s)
 
 
 def COND_B(s):
-    return F("DejaVuSansCondensed-Bold.ttf", s)
+    return F("DejaVuSans-Bold.ttf", s)
 
 
 def COND_O(s):
-    return F("DejaVuSansCondensed-Oblique.ttf", s)
+    return F("DejaVuSans.ttf", s)
 
 
 # ---------------------------------------------------------------- helpers
@@ -230,6 +231,7 @@ def draw_person(d, cx, head_y, r, skin, hair, style, suit, tie, bottom=None, s=1
     bottom: clip the body at this y (scene edge) so nothing spills below.
     s: scale factor for narrow panels (shoulders/head shrink together)."""
     r = r * s
+    fs = r / 30.0  # face-feature scale: grows with head radius
     bot = bottom if bottom is not None else head_y + 118 * s
     sh = 54 * s
     # shoulders
@@ -269,12 +271,12 @@ def draw_person(d, cx, head_y, r, skin, hair, style, suit, tie, bottom=None, s=1
                    180, 360, fill=hair, outline=INK)
     # brows + eyes + nose + smile (large and high-contrast: faces must
     # still read at thumbnail size)
-    d.line([cx - 14 * s, head_y - 9 * s, cx - 4 * s, head_y - 11 * s], fill=INK, width=3)
-    d.line([cx + 4 * s, head_y - 11 * s, cx + 14 * s, head_y - 9 * s], fill=INK, width=3)
-    d.ellipse([cx - 11 * s, head_y - 6 * s, cx - 5 * s, head_y + 1 * s], fill=INK)
-    d.ellipse([cx + 5 * s, head_y - 6 * s, cx + 11 * s, head_y + 1 * s], fill=INK)
-    d.line([cx, head_y + 1 * s, cx - 1 * s, head_y + 8 * s], fill=(150, 110, 80), width=2)
-    d.arc([cx - 10 * s, head_y + 5 * s, cx + 10 * s, head_y + 19 * s], 20, 160, fill=INK, width=3)
+    d.line([cx - 14 * fs, head_y - 9 * fs, cx - 4 * fs, head_y - 11 * fs], fill=INK, width=3)
+    d.line([cx + 4 * fs, head_y - 11 * fs, cx + 14 * fs, head_y - 9 * fs], fill=INK, width=3)
+    d.ellipse([cx - 11 * fs, head_y - 6 * fs, cx - 5 * fs, head_y + 1 * fs], fill=INK)
+    d.ellipse([cx + 5 * fs, head_y - 6 * fs, cx + 11 * fs, head_y + 1 * fs], fill=INK)
+    d.line([cx, head_y + 1 * fs, cx - 1 * fs, head_y + 8 * fs], fill=(150, 110, 80), width=2)
+    d.arc([cx - 10 * fs, head_y + 5 * fs, cx + 10 * fs, head_y + 19 * fs], 20, 160, fill=INK, width=3)
 
 
 # ---------------------------------------------------------------- hero scenes
@@ -287,30 +289,30 @@ def scene_apec(d, x, y, w, h):
     # wall panel + gold trim
     d.rectangle([x + 10, y + 8, x + w - 10, y + h - 8], outline=GOLD, width=1)
     # large flags behind each leader (readable at thumbnail size)
-    flag_us(d, x + int(w * 0.20) - 39, y + 10, 78, 48)
-    flag_cn(d, x + w // 2 - 39, y + 10, 78, 48)
-    flag_ru(d, x + int(w * 0.80) - 39, y + 10, 78, 48)
+    flag_us(d, x + int(w * 0.18) - 44, y + 8, 88, 54)
+    flag_cn(d, x + w // 2 - 44, y + 8, 88, 54)
+    flag_ru(d, x + int(w * 0.82) - 44, y + 8, 88, 54)
     # table (pale, so the dark suits read against it)
     d.rectangle([x, y + h - 46, x + w, y + h], fill=(250, 244, 228),
                 outline=INK, width=2)
     d.line([x, y + h - 46, x + w, y + h - 46], fill=GOLD_L, width=2)
     # leaders (s=0.95, r=30: heads big enough to read at thumbnail size)
-    head_y = y + h - 72
+    head_y = y + h - 80
     s = 0.95 if w < 400 else 1.0
     leaders = [
-        (x + int(w * 0.20), "TRUMP", SKIN, (232, 196, 90), "trump", NAVY_DARK, RED_BRIGHT),
+        (x + int(w * 0.18), "TRUMP", SKIN, (232, 196, 90), "trump", NAVY_DARK, RED_BRIGHT),
         (x + w // 2, "XI", SKIN2, (30, 28, 26), "xi", (24, 24, 24), RED_BRIGHT),
-        (x + int(w * 0.80), "PUTIN", SKIN, (214, 200, 170), "putin", (52, 54, 60), BLUE),
+        (x + int(w * 0.82), "PUTIN", SKIN, (214, 200, 170), "putin", (52, 54, 60), BLUE),
     ]
     for cx, name, skin, hair, style, suit, tie in leaders:
-        draw_person(d, cx, head_y, 30, skin, hair, style, suit, tie,
+        draw_person(d, cx, head_y, 44, skin, hair, style, suit, tie,
                     bottom=y + h, s=s)
         # nameplate on the table
-        f = SANS_B(11)
+        f = SANS_B(12)
         tw = d.textlength(name, font=f)
-        d.rectangle([cx - tw / 2 - 8, y + h - 30, cx + tw / 2 + 8, y + h - 12],
+        d.rectangle([cx - tw / 2 - 9, y + h - 32, cx + tw / 2 + 9, y + h - 11],
                     fill=(250, 244, 228), outline=INK, width=1)
-        d.text((cx - tw / 2, y + h - 29), name, font=f, fill=INK)
+        d.text((cx - tw / 2, y + h - 31), name, font=f, fill=INK)
 
 
 def scene_icj(d, x, y, w, h):
@@ -356,23 +358,23 @@ def scene_icj(d, x, y, w, h):
     d.rectangle([x + 150, y + 42, x + 174, y + h - 12], fill=(60, 44, 34), outline=INK, width=1)
     # large scales of justice, standing on the ground at the right
     # (bx kept left so the right pan stays inside the panel)
-    bx, by = x + 282, y + h - 64
-    d.ellipse([bx - 4, by - 5, bx + 4, by + 3], fill=GOLD, outline=INK, width=1)
-    d.line([bx, by + 2, bx, by + 52], fill=GOLD_D, width=4)
-    d.line([bx - 30, by + 8, bx + 30, by + 8], fill=GOLD_D, width=3)
+    bx, by = x + 266, y + h - 66
+    d.ellipse([bx - 5, by - 6, bx + 5, by + 4], fill=GOLD, outline=INK, width=1)
+    d.line([bx, by + 2, bx, by + 56], fill=GOLD_D, width=5)
+    d.line([bx - 34, by + 8, bx + 34, by + 8], fill=GOLD_D, width=4)
     for sgn in (-1, 1):
-        px = bx + sgn * 30
-        d.line([px, by + 8, px - 10, by + 14], fill=GOLD_D, width=2)
-        d.line([px, by + 8, px + 10, by + 14], fill=GOLD_D, width=2)
-        d.pieslice([px - 11, by + 12, px + 11, by + 26], 0, 180,
+        px = bx + sgn * 34
+        d.line([px, by + 8, px - 12, by + 15], fill=GOLD_D, width=2)
+        d.line([px, by + 8, px + 12, by + 15], fill=GOLD_D, width=2)
+        d.pieslice([px - 13, by + 13, px + 13, by + 30], 0, 180,
                    fill=GOLD, outline=INK)
-    d.rectangle([bx - 14, by + 52, bx + 14, by + 58], fill=GOLD_D, outline=INK, width=1)
+    d.rectangle([bx - 15, by + 56, bx + 15, by + 62], fill=GOLD_D, outline=INK, width=1)
     # 9-6 badge
-    f = SANS_B(16)
+    f = SANS_B(20)
     tw = d.textlength("9–6", font=f)
-    d.rounded_rectangle([x + w - tw - 26, y + 6, x + w - 8, y + 30], radius=4,
+    d.rounded_rectangle([x + w - tw - 32, y + 6, x + w - 8, y + 36], radius=4,
                         fill=RED, outline=INK, width=1)
-    d.text((x + w - tw - 17, y + 9), "9–6", font=f, fill=(255, 255, 255))
+    d.text((x + w - tw - 20, y + 10), "9–6", font=f, fill=(255, 255, 255))
 
 
 def scene_anthropic(d, img, x, y, w, h):
@@ -412,24 +414,24 @@ def scene_cop31(d, img, x, y, w, h, big=False):
     d.rectangle([x, y, x + w, y + h], fill=(58, 130, 120))
     if big:
         # globe — dominant
-        cx, cy, r = x + 54, y + h // 2, 36
+        cx, cy, r = x + 56, y + h // 2, 44
         d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(70, 140, 200),
                   outline=INK, width=2)
-        d.ellipse([cx - 20, cy - 26, cx + 0, cy - 8], fill=GREEN)
-        d.ellipse([cx - 6, cy + 6, cx + 22, cy + 26], fill=GREEN)
-        d.ellipse([cx + 8, cy - 28, cx + 24, cy - 12], fill=GREEN)
+        d.ellipse([cx - 26, cy - 32, cx + 0, cy - 10], fill=GREEN)
+        d.ellipse([cx - 8, cy + 8, cx + 26, cy + 32], fill=GREEN)
+        d.ellipse([cx + 10, cy - 34, cx + 30, cy - 14], fill=GREEN)
         # thermometer — big
-        tx = x + 102
-        d.rounded_rectangle([tx, y + 10, tx + 14, y + h - 16], radius=7,
+        tx = x + 112
+        d.rounded_rectangle([tx, y + 8, tx + 16, y + h - 14], radius=8,
                             fill=(245, 245, 240), outline=INK, width=1)
-        d.ellipse([tx - 5, y + h - 24, tx + 19, y + h - 2], fill=RED_BRIGHT,
+        d.ellipse([tx - 6, y + h - 26, tx + 22, y + h - 2], fill=RED_BRIGHT,
                   outline=INK, width=1)
-        d.rectangle([tx + 4, y + 18, tx + 10, y + h - 16], fill=RED_BRIGHT)
-        for ty in (y + 26, y + 46, y + 66, y + 86):
-            d.line([tx + 14, ty, tx + 20, ty], fill=INK, width=1)
+        d.rectangle([tx + 5, y + 16, tx + 11, y + h - 16], fill=RED_BRIGHT)
+        for ty in (y + 26, y + 48, y + 70, y + 92):
+            d.line([tx + 16, ty, tx + 23, ty], fill=INK, width=1)
         # document — small, only the three lines (the aid figure and the
         # Friday close already live in the deck below the panel)
-        dx = x + 132
+        dx = x + 144
         d.rectangle([dx, y + 10, x + w - 10, y + 92], fill=(250, 244, 228),
                     outline=INK, width=1)
         d.text((dx + 8, y + 16), "DRAFT DEAL · 19 NOV", font=SANS_B(10), fill=INK)
@@ -506,7 +508,7 @@ def scene_odisha(d, img, x, y, w, h):
                (x + w - 60, y + h * 0.5)], fill=(222, 200, 150), outline=INK)
     # cyclone spiral
     cx, cy = x + 62, y + h // 2 + 2
-    for i, rr in enumerate([20, 16, 12, 8]):
+    for i, rr in enumerate([26, 21, 16, 10]):
         d.arc([cx - rr, cy - rr, cx + rr, cy + rr], 20 + i * 40, 200 + i * 40,
               fill=(255, 255, 255), width=3)
     d.ellipse([cx - 3, cy - 3, cx + 3, cy + 3], fill=RED)
@@ -550,12 +552,12 @@ def scene_gta(d, img, x, y, w, h):
         d.rectangle([x + bx, y + h - bh, x + bx + bw, y + h], fill=(40, 22, 55))
     # controller
     cx, cy = x + 62, y + 16
-    d.rounded_rectangle([cx - 34, cy - 4, cx + 34, cy + 16], radius=8,
+    d.rounded_rectangle([cx - 42, cy - 6, cx + 42, cy + 18], radius=10,
                         fill=(245, 245, 240), outline=INK, width=2)
-    d.ellipse([cx - 26, cy + 12, cx - 14, cy + 24], fill=(245, 245, 240), outline=INK, width=2)
-    d.ellipse([cx + 14, cy + 12, cx + 26, cy + 24], fill=(245, 245, 240), outline=INK, width=2)
-    d.ellipse([cx - 20, cy - 1, cx - 12, cy + 7], fill=INK)
-    d.ellipse([cx + 12, cy - 1, cx + 20, cy + 7], fill=RED_BRIGHT)
+    d.ellipse([cx - 32, cy + 14, cx - 18, cy + 28], fill=(245, 245, 240), outline=INK, width=2)
+    d.ellipse([cx + 18, cy + 14, cx + 32, cy + 28], fill=(245, 245, 240), outline=INK, width=2)
+    d.ellipse([cx - 26, cy - 2, cx - 16, cy + 8], fill=INK)
+    d.ellipse([cx + 16, cy - 2, cx + 26, cy + 8], fill=RED_BRIGHT)
     # VI
     d.text((x + w - 46, y + h - 26), "VI", font=SERIF_B(22), fill=GOLD_L)
     scene_label(d, x, y, w, "GTA VI · 13 YEARS ON", side="right")
@@ -564,22 +566,21 @@ def scene_gta(d, img, x, y, w, h):
 def scene_seoul(d, img, x, y, w, h):
     d.rectangle([x, y, x + w, y + h], fill=(238, 230, 210))
     # court building
-    d.rectangle([x + 8, y + 12, x + 84, y + h - 6], fill=(200, 190, 170), outline=INK, width=1)
-    d.polygon([(x + 4, y + 12), (x + 88, y + 12), (x + 46, y + 2)],
+    d.rectangle([x + 6, y + 8, x + 92, y + h - 4], fill=(200, 190, 170), outline=INK, width=1)
+    d.polygon([(x + 2, y + 8), (x + 96, y + 8), (x + 49, y - 2)],
               fill=(170, 150, 120), outline=INK)
     for i in range(3):
-        cx = x + 24 + i * 22
-        d.rectangle([cx - 3, y + 18, cx + 3, y + h - 6], fill=(245, 240, 225),
+        cx = x + 26 + i * 24
+        d.rectangle([cx - 4, y + 14, cx + 4, y + h - 4], fill=(245, 240, 225),
                     outline=INK, width=1)
-    flag_kr(d, x + 96, y + 6, 26, 17)
-    # gavel
-    d.line([x + 108, y + 30, x + 150, y + 12], fill=(120, 80, 40), width=4)
-    d.rounded_rectangle([x + 146, y + 4, x + 172, y + 16], radius=3,
+    flag_kr(d, x + 100, y + 4, 30, 19)
+    # gavel — large, dominates the right half
+    d.line([x + 104, y + 44, x + 164, y + 12], fill=(120, 80, 40), width=6)
+    d.rounded_rectangle([x + 158, y + 2, x + 192, y + 22], radius=4,
                         fill=(140, 95, 50), outline=INK, width=1)
-    d.rectangle([x + 108, y + 32, x + 138, y + 38], fill=(140, 95, 50), outline=INK, width=1)
-    # OVERTURNED stamp: small, bottom-right empty sky — clear of the
-    # court roof (left) and the flag (top), inside the scene
-    stamp(img, d, x + w - 35, y + h - 12, "OVERTURNED", 6, RED_BRIGHT, angle=-8)
+    d.rectangle([x + 102, y + 46, x + 146, y + 54], fill=(140, 95, 50), outline=INK, width=1)
+    # OVERTURNED stamp — large, bottom-right
+    stamp(img, d, x + w - 38, y + h - 13, "OVERTURNED", 7, RED_BRIGHT, angle=-8)
 
 
 def scene_bogota(d, img, x, y, w, h):
@@ -592,7 +593,7 @@ def scene_bogota(d, img, x, y, w, h):
     # crowd: rows of heads + shoulders
     cols = [(178, 58, 38), (47, 93, 138), (62, 125, 68), (122, 78, 158),
             (176, 138, 30), (46, 122, 110)]
-    for row, yy in enumerate([26, 34]):
+    for row, yy in enumerate([22, 32, 42]):
         for i in range(7):
             cx = x + 16 + i * 24 + (row * 10)
             c = cols[(i + row) % len(cols)]
@@ -616,22 +617,26 @@ def scene_nairobi(d, img, x, y, w, h):
     d.line([x + 78, y + 28, x + 94, y + h - 10], fill=INK, width=3)  # leg fwd
     # lane lines
     d.line([x, y + h - 14, x + w, y + h - 14], fill=(255, 255, 255), width=1)
-    stamp(img, d, x + 34, y + 14, "BANNED", 10, RED, angle=-12)
+    stamp(img, d, x + 40, y + 16, "BANNED", 13, RED, angle=-12)
     scene_label(d, x, y, w, "DOPING · 3 YEARS", side="right")
 
 
 def scene_canberra(d, img, x, y, w, h):
     d.rectangle([x, y, x + w, y + h], fill=(238, 230, 210))
-    d.text((x + 10, y + 4), "4.9%", font=SERIF_B(24), fill=NAVY)
-    # people icons
-    for i, cx in enumerate([x + 118, x + 136, x + 154]):
-        d.ellipse([cx - 5, y + 8, cx + 5, y + 18], fill=INK_SOFT)
-        d.pieslice([cx - 8, y + 19, cx + 8, y + 32], 180, 360, fill=INK_SOFT)
-    # down arrow
-    d.line([x + w - 18, y + 6, x + w - 18, y + 30], fill=RED_BRIGHT, width=4)
-    d.polygon([(x + w - 26, y + 24), (x + w - 10, y + 24), (x + w - 18, y + 36)],
+    d.text((x + 8, y + 2), "4.9%", font=SERIF_B(19), fill=NAVY)
+    # row of people icons (top right)
+    for i, cx in enumerate([x + 108, x + 128, x + 148, x + 168]):
+        d.ellipse([cx - 6, y + 6, cx + 6, y + 18], fill=INK_SOFT)
+        d.pieslice([cx - 9, y + 19, cx + 9, y + 34], 180, 360, fill=INK_SOFT)
+    # big rising chart along the bottom
+    base = y + h - 4
+    for i, bh in enumerate([10, 15, 12, 20, 26]):
+        bx = x + 8 + i * 17
+        d.rectangle([bx, base - bh, bx + 13, base], fill=TEAL, outline=INK, width=1)
+    # down arrow (bottom right)
+    d.line([x + w - 14, y + 36, x + w - 14, y + 52], fill=RED_BRIGHT, width=4)
+    d.polygon([(x + w - 22, y + 46), (x + w - 6, y + 46), (x + w - 14, y + 58)],
               fill=RED_BRIGHT)
-    scene_label(d, x, y, w, "JOBLESS RATE", side="left", dy=27)
 
 
 # ---------------------------------------------------------------- data
@@ -651,8 +656,7 @@ REGION_TOTALS = {"ASIA": 7, "MIDDLE EAST": 3, "EUROPE": 7, "AFRICA": 5,
 # secondary cards 4-13: (num, kicker, headline, deck, scene fn, tag)
 CARDS = [
     (4, "NEW YORK · MARKETS", "Anthropic jumps 17% on Nasdaq debut",
-     "Shares in the Claude maker rise 17% on the first day of trading; the "
-     "record $81.3bn offering is the largest IPO on record. — AP · Reuters",
+     "Shares rise 17% on day one; $81.3bn IPO is the largest on record. — AP",
      scene_anthropic, "REPORTED"),
     (5, "CRIMEA · WAR", "Ukraine hits Crimea bridge again",
      "Third strike in a week halts trains to Russia. — Euronews",
@@ -858,9 +862,9 @@ def hero_text(d, x, y, w, num, kicker, headline, deck, tag, hsize=15):
 
 def card(d, img, x, y, w, h, num, kicker, headline, deck, scene, tag):
     d.rectangle([x, y, x + w, y + h], fill=PAPER, outline=INK, width=1)
-    scene(d, img, x + 1, y + 1, w - 2, 40)
-    d.line([x, y + 41, x + w, y + 41], fill=INK, width=1)
-    num_badge(d, x + 11, y + 53, num, r=9, size=10)
+    scene(d, img, x + 1, y + 1, w - 2, 62)
+    d.line([x, y + 63, x + w, y + 63], fill=INK, width=1)
+    num_badge(d, x + 11, y + 75, num, r=9, size=10)
     tag_color = GOLD_D if tag == "FORECAST" else RED
     tw = int(d.textlength(tag, font=SANS_B(7))) + 8
     # shrink kicker until it clears the tag chip
@@ -868,11 +872,11 @@ def card(d, img, x, y, w, h, num, kicker, headline, deck, scene, tag):
     while (25 + d.textlength(kicker, font=SANS_B(ksize)) + 6
            > w - tw - 8) and ksize > 7:
         ksize -= 1
-    d.text((x + 25, y + 47), kicker, font=SANS_B(ksize), fill=RED)
-    d.rounded_rectangle([x + w - tw - 4, y + 47, x + w - 4, y + 58], radius=3,
+    d.text((x + 25, y + 69), kicker, font=SANS_B(ksize), fill=RED)
+    d.rounded_rectangle([x + w - tw - 4, y + 69, x + w - 4, y + 80], radius=3,
                         outline=tag_color, width=1)
-    d.text((x + w - tw, y + 48), tag, font=SANS_B(7), fill=tag_color)
-    yy = y + 61
+    d.text((x + w - tw, y + 70), tag, font=SANS_B(7), fill=tag_color)
+    yy = y + 83
     for ln in wrap(d, headline, SERIF_B(13), w - 12):
         d.text((x + 6, yy), ln, font=SERIF_B(13), fill=INK)
         yy += 16
@@ -886,7 +890,7 @@ def card(d, img, x, y, w, h, num, kicker, headline, deck, scene, tag):
 def draw_brief(d, x, y, maxw, num, place, sentence, source):
     """One brief line: red number + bold place + sentence + italic source.
     Shrinks font until it fits."""
-    for size in (10, 9, 8):
+    for size in (10, 9, 8, 7, 6):
         f_num = COND_B(size)
         f_pl = COND_B(size)
         f_tx = COND(size)
@@ -956,7 +960,7 @@ def render():
                label, font=f_r, fill=(255, 255, 255))
 
     # ---- 4. hero zone: 3 panels across, equal width (no stacked column)
-    hy, hh = 220, 260
+    hy, hh = 220, 288
     hw = [327, 327, 328]
     hx = [14, 348, 682]
 
@@ -968,8 +972,8 @@ def render():
     right_b = "US–CHINA–RUSSIA SUMMIT"
     d.text((ax + aw - 10 - d.textlength(right_b, font=SANS_B(10)), ay + 5),
            right_b, font=SANS_B(10), fill=(255, 255, 255))
-    scene_apec(d, ax + 1, ay + 24, aw - 2, 120)
-    hero_text(d, ax, ay + 144, aw, 1, "SHENZHEN · SUMMIT",
+    scene_apec(d, ax + 1, ay + 24, aw - 2, 148)
+    hero_text(d, ax, ay + 172, aw, 1, "SHENZHEN · SUMMIT",
               "Trump, Xi and Putin hold first three-way summit",
               "The U.S., Chinese and Russian leaders met for 90 minutes at Kylin "
               "Villa and issued a 'Declaration on Peace' on nuclear risk and UN "
@@ -982,8 +986,8 @@ def render():
     d.rectangle([ix + 1, iy + 1, ix + iw - 1, iy + 23], fill=NAVY)
     d.text((ix + 10, iy + 5), "WORLD COURT · THE HAGUE", font=SANS_B(10),
            fill=(255, 255, 255))
-    scene_icj(d, ix + 1, iy + 24, iw - 2, 120)
-    hero_text(d, ix, iy + 144, iw, 2, "THE HAGUE · JUSTICE",
+    scene_icj(d, ix + 1, iy + 24, iw - 2, 148)
+    hero_text(d, ix, iy + 172, iw, 2, "THE HAGUE · JUSTICE",
               "World Court: Myanmar committed genocide",
               "By 9 votes to 6 the ICJ found Myanmar guilty of genocide against "
               "the Rohingya and ordered reparations. — Al Jazeera · UN News",
@@ -995,8 +999,8 @@ def render():
     d.rectangle([cx3 + 1, cy3 + 1, cx3 + cw3 - 1, cy3 + 23], fill=NAVY)
     d.text((cx3 + 10, cy3 + 5), "COP31 · ANTALYA", font=SANS_B(10),
            fill=(255, 255, 255))
-    scene_cop31(d, img, cx3 + 1, cy3 + 24, cw3 - 2, 120, big=True)
-    hero_text(d, cx3, cy3 + 144, cw3, 3, "ANTALYA · CLIMATE",
+    scene_cop31(d, img, cx3 + 1, cy3 + 24, cw3 - 2, 148, big=True)
+    hero_text(d, cx3, cy3 + 172, cw3, 3, "ANTALYA · CLIMATE",
               "COP31 draft drops fossil fuels and $120bn aid goal",
               "The slimmer text has no figure for adaptation aid. Talks are due "
               "to end on Friday. — Reuters · AFP",
@@ -1008,36 +1012,36 @@ def render():
         for col in range(5):
             num, kicker, head, deck, scene, tag = CARDS[row * 5 + col]
             cx = 14 + col * (gw + 7)
-            cy = 486 + row * 146
+            cy = 514 + row * 146
             card(d, img, cx, cy, gw, 140, num, kicker, head, deck, scene, tag)
 
     # ---- 6. bottom: map + briefs
-    d.text((14, 778), "WHERE IT HAPPENED", font=SANS_B(13), fill=INK)
+    d.text((14, 806), "WHERE IT HAPPENED", font=SANS_B(13), fill=INK)
     f_m = SANS_O(9)
-    d.text((384 - d.textlength("numbers match the stories", font=f_m), 781),
+    d.text((384 - d.textlength("numbers match the stories", font=f_m), 809),
            "numbers match the stories", font=f_m, fill=GREY)
-    draw_map(d, 14, 798, 370, 118)
-    d.text((14, 920), "No pin: GTA VI (worldwide) · Space (no location)",
+    draw_map(d, 14, 826, 370, 100)
+    d.text((14, 930), "No pin: GTA VI (worldwide) · Space (no location)",
            font=SANS_O(9), fill=GREY)
 
     bx = 396
-    d.text((bx, 778), "ALSO ON THURSDAY 19 NOVEMBER 2026", font=SANS_B(13), fill=INK)
-    d.text((1010 - d.textlength("place · what happened · source", font=f_m), 781),
+    d.text((bx, 806), "ALSO ON THURSDAY 19 NOVEMBER 2026", font=SANS_B(13), fill=INK)
+    d.text((1010 - d.textlength("place · what happened · source", font=f_m), 809),
            "place · what happened · source", font=f_m, fill=GREY)
-    d.line([bx, 796, 1010, 796], fill=RED, width=2)
+    d.line([bx, 824, 1010, 824], fill=RED, width=2)
     colw = (1010 - bx - 12) / 2
     for i, (num, place, sent, src) in enumerate(BRIEFS):
         col = i // 10
         row = i % 10
         xx = bx + col * (colw + 12)
-        yy = 802 + row * 13.4
+        yy = 830 + row * 12.2
         draw_brief(d, xx, yy, colw, num, place, sent, src)
 
     # ---- 7. footer DATE CHECK
-    d.rounded_rectangle([14, 940, 1010, 994], radius=4, outline=RED, width=1)
+    d.rounded_rectangle([14, 952, 1010, 1004], radius=4, outline=RED, width=1)
     f_dc = SANS(10)
     lines = wrap(d, DATE_CHECK, f_dc, 968)
-    yy = 945
+    yy = 956
     for j, ln in enumerate(lines):
         if j == 0:
             lead = "DATE CHECK ✓ "
@@ -1046,9 +1050,9 @@ def render():
                    font=f_dc, fill=INK)
         else:
             d.text((22, yy), ln, font=f_dc, fill=INK)
-        yy += 14
-    d.text((14, 999), CREDIT, font=SANS(8), fill=GREY)
-    d.text((14, 1011), LEGEND, font=SANS_B(8), fill=GREY)
+        yy += 12.5
+    d.text((14, 1006), CREDIT, font=SANS(8), fill=GREY)
+    d.text((14, 1015), LEGEND, font=SANS_B(8), fill=GREY)
 
     out = img.convert("RGB")
     out.save(os.path.join(HERE, "entry.png"), optimize=True)
