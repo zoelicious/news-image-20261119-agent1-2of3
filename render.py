@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render entry 2/3 for make.fun news-image-20261119 (agent 1).
 
-Concept: NAVY MASTHEAD, HERO 3-ACROSS, COP31 #3, ANTHROPIC #4.
+Concept: CREAM MASTHEAD, HERO 3-ACROSS, COP31 #3, ANTHROPIC #4.
 Drawn from scratch with Pillow. Deterministic: no timestamps, no randomness.
 """
 import math
@@ -141,6 +141,16 @@ def stamp(img, d, cx, cy, text, size, color, angle=-12):
     img.paste(layer, (int(cx - layer.width / 2), int(cy - layer.height / 2)), layer)
 
 
+def scene_label(d, x, y, w, text, side="left", dy=3):
+    """Small navy chip with white caps text inside a scene (tile label)."""
+    f = SANS_B(8)
+    tw = int(d.textlength(text, font=f)) + 10
+    lx = x + 4 if side == "left" else x + w - tw - 4
+    d.rounded_rectangle([lx, y + dy, lx + tw, y + dy + 12], radius=3,
+                        fill=NAVY_DARK, outline=(255, 255, 255), width=1)
+    d.text((lx + 5, y + dy + 2), text, font=f, fill=(255, 255, 255))
+
+
 def tag_chip(d, x, y, text, color):
     """Small outline tag, e.g. REPORTED / FORECAST. Returns right edge x."""
     f = SANS_B(8)
@@ -225,6 +235,9 @@ def draw_person(d, cx, head_y, r, skin, hair, style, suit, tie, bottom=None, s=1
     # shoulders
     d.rounded_rectangle([cx - sh, head_y + r + 4, cx + sh, min(head_y + 118 * s, bot)],
                         radius=16, fill=suit, outline=INK, width=2)
+    # neck (fills the gap between chin and shoulders)
+    d.rectangle([cx - 9 * s, head_y + r - 6, cx + 9 * s, head_y + r + 10],
+                fill=skin)
     # shirt
     sh_bot = min(head_y + r + 36 * s, bot)
     d.polygon([(cx - 15 * s, head_y + r + 6), (cx + 15 * s, head_y + r + 6),
@@ -266,18 +279,20 @@ def draw_person(d, cx, head_y, r, skin, hair, style, suit, tie, bottom=None, s=1
 
 # ---------------------------------------------------------------- hero scenes
 def scene_apec(d, x, y, w, h):
-    """APEC summit: navy wall, three flags, three faced leaders at a table.
+    """APEC summit: navy wall, LARGE flags behind each leader, three
+    full-bodied leaders (suit, tie, table, nameplates) at a pale table.
     Width-aware: narrow hero panels shrink the figures (s=0.8) so the
     three leaders fit without overlapping."""
     d.rectangle([x, y, x + w, y + h], fill=NAVY)
     # wall panel + gold trim
     d.rectangle([x + 10, y + 8, x + w - 10, y + h - 8], outline=GOLD, width=1)
-    # flags on the wall
-    flag_us(d, x + 28, y + 22, 62, 38)
-    flag_cn(d, x + w // 2 - 31, y + 22, 62, 38)
-    flag_ru(d, x + w - 90, y + 22, 62, 38)
-    # table
-    d.rectangle([x, y + h - 46, x + w, y + h], fill=WOOD, outline=INK, width=2)
+    # large flags behind each leader (readable at thumbnail size)
+    flag_us(d, x + int(w * 0.20) - 39, y + 10, 78, 48)
+    flag_cn(d, x + w // 2 - 39, y + 10, 78, 48)
+    flag_ru(d, x + int(w * 0.80) - 39, y + 10, 78, 48)
+    # table (pale, so the dark suits read against it)
+    d.rectangle([x, y + h - 46, x + w, y + h], fill=(250, 244, 228),
+                outline=INK, width=2)
     d.line([x, y + h - 46, x + w, y + h - 46], fill=GOLD_L, width=2)
     # leaders (s=0.95, r=30: heads big enough to read at thumbnail size)
     head_y = y + h - 72
@@ -306,7 +321,7 @@ def scene_icj(d, x, y, w, h):
     d.rectangle([x, y + h - 12, x + w, y + h], fill=(190, 200, 190))
     # tower with arched window
     d.rectangle([x + 52, y + 8, x + 74, y + h - 12], fill=BRICK, outline=INK, width=1)
-    d.polygon([(x + 48, y + 8), (x + 78, y + 8), (x + 63, y - 2)], fill=BRICK, outline=INK)
+    d.polygon([(x + 48, y + 8), (x + 78, y + 8), (x + 63, y + 1)], fill=BRICK, outline=INK)
     d.pieslice([x + 58, y + 14, x + 68, y + 26], 180, 360,
                fill=(70, 90, 120), outline=INK)
     d.rectangle([x + 58, y + 20, x + 68, y + 34], fill=(70, 90, 120), outline=INK)
@@ -340,7 +355,8 @@ def scene_icj(d, x, y, w, h):
     # door
     d.rectangle([x + 150, y + 42, x + 174, y + h - 12], fill=(60, 44, 34), outline=INK, width=1)
     # large scales of justice, standing on the ground at the right
-    bx, by = x + 290, y + h - 64
+    # (bx kept left so the right pan stays inside the panel)
+    bx, by = x + 282, y + h - 64
     d.ellipse([bx - 4, by - 5, bx + 4, by + 3], fill=GOLD, outline=INK, width=1)
     d.line([bx, by + 2, bx, by + 52], fill=GOLD_D, width=4)
     d.line([bx - 30, by + 8, bx + 30, by + 8], fill=GOLD_D, width=3)
@@ -414,14 +430,15 @@ def scene_cop31(d, img, x, y, w, h, big=False):
         # document — small, only the three lines (the aid figure and the
         # Friday close already live in the deck below the panel)
         dx = x + 132
-        d.rectangle([dx, y + 10, x + w - 10, y + 80], fill=(250, 244, 228),
+        d.rectangle([dx, y + 10, x + w - 10, y + 92], fill=(250, 244, 228),
                     outline=INK, width=1)
         d.text((dx + 8, y + 16), "DRAFT DEAL · 19 NOV", font=SANS_B(10), fill=INK)
         f_ff = SANS_B(15)
         d.text((dx + 8, y + 34), "FOSSIL FUELS", font=f_ff, fill=INK)
         fw = d.textlength("FOSSIL FUELS", font=f_ff)
         d.line([dx + 8, y + 44, dx + 10 + fw, y + 44], fill=RED_BRIGHT, width=3)
-        d.text((dx + 8, y + 54), "$120BN AID CUT", font=SANS_B(13), fill=RED_BRIGHT)
+        d.text((dx + 8, y + 56), "$120BN ADAPTATION", font=SANS_B(13), fill=RED_BRIGHT)
+        d.text((dx + 8, y + 74), "AID CUT", font=SANS_B(13), fill=RED_BRIGHT)
         return
     # globe
     cx, cy, r = x + 34, y + h // 2, 17
@@ -462,6 +479,7 @@ def scene_crimea(d, img, x, y, w, h):
     # smoke
     for sx, sy, sr in [(x + 40, y + 10, 7), (x + 52, y + 6, 9), (x + 64, y + 12, 6)]:
         d.ellipse([sx - sr, sy - sr, sx + sr, sy + sr], fill=(120, 118, 112))
+    scene_label(d, x, y, w, "KERCH BRIDGE")
 
 
 def scene_riyadh(d, img, x, y, w, h):
@@ -478,6 +496,7 @@ def scene_riyadh(d, img, x, y, w, h):
     d.arc([x + 70, y - 24, x + 190, y + 30], 210, 320, fill=GOLD_L, width=2)
     star(d, x + 148, y + 8, 5, (255, 255, 255))
     star(d, x + 178, y + 12, 4, GOLD_L)
+    scene_label(d, x, y, w, "OVER RIYADH", side="right")
 
 
 def scene_odisha(d, img, x, y, w, h):
@@ -495,7 +514,7 @@ def scene_odisha(d, img, x, y, w, h):
     d.line([cx + 24, cy - 6, x + w - 58, cy - 10], fill=RED, width=2)
     d.polygon([(x + w - 58, cy - 10), (x + w - 66, cy - 14), (x + w - 66, cy - 6)],
               fill=RED)
-    d.text((x + 6, y + 3), "ODISHA", font=SANS_B(8), fill=NAVY)
+    d.text((x + 6, y + 3), "CYCLONE AKVAN", font=SANS_B(8), fill=NAVY)
 
 
 def scene_greenland(d, img, x, y, w, h):
@@ -509,6 +528,8 @@ def scene_greenland(d, img, x, y, w, h):
               fill=(250, 250, 248), outline=INK)
     flag_dk(d, x + 8, y + 5, 26, 17)
     flag_us(d, x + 38, y + 5, 26, 17)
+    # label on the ice, bottom-left
+    d.text((x + 6, y + h - 12), "GREENLAND", font=SANS_B(8), fill=NAVY)
     # 109-0 badge
     f = SANS_B(10)
     tw = d.textlength("109–0", font=f)
@@ -537,6 +558,7 @@ def scene_gta(d, img, x, y, w, h):
     d.ellipse([cx + 12, cy - 1, cx + 20, cy + 7], fill=RED_BRIGHT)
     # VI
     d.text((x + w - 46, y + h - 26), "VI", font=SERIF_B(22), fill=GOLD_L)
+    scene_label(d, x, y, w, "GTA VI · 13 YEARS ON", side="right")
 
 
 def scene_seoul(d, img, x, y, w, h):
@@ -595,6 +617,7 @@ def scene_nairobi(d, img, x, y, w, h):
     # lane lines
     d.line([x, y + h - 14, x + w, y + h - 14], fill=(255, 255, 255), width=1)
     stamp(img, d, x + 34, y + 14, "BANNED", 10, RED, angle=-12)
+    scene_label(d, x, y, w, "DOPING · 3 YEARS", side="right")
 
 
 def scene_canberra(d, img, x, y, w, h):
@@ -608,6 +631,7 @@ def scene_canberra(d, img, x, y, w, h):
     d.line([x + w - 18, y + 6, x + w - 18, y + 30], fill=RED_BRIGHT, width=4)
     d.polygon([(x + w - 26, y + 24), (x + w - 10, y + 24), (x + w - 18, y + 36)],
               fill=RED_BRIGHT)
+    scene_label(d, x, y, w, "JOBLESS RATE", side="left", dy=27)
 
 
 # ---------------------------------------------------------------- data
@@ -891,19 +915,17 @@ def render():
     img = Image.new("RGBA", (W, H), CREAM + (255,))
     d = ImageDraw.Draw(img)
 
-    # ---- 1. masthead NAVY
-    d.rectangle([0, 0, W, 106], fill=NAVY)
-    d.text((14, 12), "THE WORLD IN ONE DAY", font=SANS_B(15), fill=(255, 255, 255))
+    # ---- 1. masthead CREAM (giant serif date, per top-10 pattern)
+    d.text((14, 10), "THE WORLD IN ONE DAY", font=SANS_B(15), fill=RED)
     right = "33 STORIES · EVERY CONTINENT · ALL FROM THIS ONE DAY"
-    d.text((W - 14 - d.textlength(right, font=SANS_B(13)), 14), right,
-           font=SANS_B(13), fill=GOLD_L)
-    d.text((14, 34), "Thursday 19 November 2026", font=SERIF_B(52),
-           fill=(255, 255, 255))
-    d.rectangle([0, 102, W, 106], fill=RED)
+    d.text((W - 14 - d.textlength(right, font=SANS_B(13)), 12), right,
+           font=SANS_B(13), fill=GOLD_D)
+    d.text((14, 32), "Thursday 19 November 2026", font=SERIF_B(54), fill=INK)
+    d.rectangle([0, 100, W, 104], fill=RED)
 
     # ---- subhead (italic red, centred, shrunk to fit)
     sub = ("Trump, Xi and Putin share one table · The World Court finds genocide "
-           "in Myanmar · Anthropic jumps 17% on its Nasdaq debut")
+           "in Myanmar · COP31 drops fossil fuels and $120bn aid goal")
     sub_size = 16
     while d.textlength(sub, font=SERIF_I(sub_size)) > 996 and sub_size > 12:
         sub_size -= 1
@@ -938,14 +960,14 @@ def render():
     hw = [327, 327, 328]
     hx = [14, 348, 682]
 
-    # hero 1: APEC (gold banner + scene + text)
+    # hero 1: APEC (navy banner + scene + text)
     ax, ay, aw = hx[0], hy, hw[0]
     d.rectangle([ax, ay, ax + aw, ay + hh], fill=PAPER, outline=INK, width=1)
-    d.rectangle([ax + 1, ay + 1, ax + aw - 1, ay + 23], fill=GOLD)
-    d.text((ax + 10, ay + 5), "APEC 2026 · SHENZHEN", font=SANS_B(10), fill=NAVY)
+    d.rectangle([ax + 1, ay + 1, ax + aw - 1, ay + 23], fill=NAVY)
+    d.text((ax + 10, ay + 5), "APEC 2026 · SHENZHEN", font=SANS_B(10), fill=(255, 255, 255))
     right_b = "US–CHINA–RUSSIA SUMMIT"
     d.text((ax + aw - 10 - d.textlength(right_b, font=SANS_B(10)), ay + 5),
-           right_b, font=SANS_B(10), fill=NAVY)
+           right_b, font=SANS_B(10), fill=(255, 255, 255))
     scene_apec(d, ax + 1, ay + 24, aw - 2, 120)
     hero_text(d, ax, ay + 144, aw, 1, "SHENZHEN · SUMMIT",
               "Trump, Xi and Putin hold first three-way summit",
@@ -954,20 +976,26 @@ def render():
               "reform. — Reuters · AP · Xinhua",
               "REPORTED", hsize=19)
 
-    # hero 2: ICJ
+    # hero 2: ICJ (navy banner + scene + text)
     ix, iy, iw = hx[1], hy, hw[1]
     d.rectangle([ix, iy, ix + iw, iy + hh], fill=PAPER, outline=INK, width=1)
-    scene_icj(d, ix + 1, iy + 1, iw - 2, 143)
+    d.rectangle([ix + 1, iy + 1, ix + iw - 1, iy + 23], fill=NAVY)
+    d.text((ix + 10, iy + 5), "WORLD COURT · THE HAGUE", font=SANS_B(10),
+           fill=(255, 255, 255))
+    scene_icj(d, ix + 1, iy + 24, iw - 2, 120)
     hero_text(d, ix, iy + 144, iw, 2, "THE HAGUE · JUSTICE",
               "World Court: Myanmar committed genocide",
               "By 9 votes to 6 the ICJ found Myanmar guilty of genocide against "
               "the Rohingya and ordered reparations. — Al Jazeera · UN News",
               "REPORTED", hsize=15)
 
-    # hero 3: COP31 (promoted from card #4)
+    # hero 3: COP31 (promoted from card #4; navy banner + scene + text)
     cx3, cy3, cw3 = hx[2], hy, hw[2]
     d.rectangle([cx3, cy3, cx3 + cw3, cy3 + hh], fill=PAPER, outline=INK, width=1)
-    scene_cop31(d, img, cx3 + 1, cy3 + 1, cw3 - 2, 143, big=True)
+    d.rectangle([cx3 + 1, cy3 + 1, cx3 + cw3 - 1, cy3 + 23], fill=NAVY)
+    d.text((cx3 + 10, cy3 + 5), "COP31 · ANTALYA", font=SANS_B(10),
+           fill=(255, 255, 255))
+    scene_cop31(d, img, cx3 + 1, cy3 + 24, cw3 - 2, 120, big=True)
     hero_text(d, cx3, cy3 + 144, cw3, 3, "ANTALYA · CLIMATE",
               "COP31 draft drops fossil fuels and $120bn aid goal",
               "The slimmer text has no figure for adaptation aid. Talks are due "
