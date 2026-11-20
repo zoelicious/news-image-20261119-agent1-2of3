@@ -193,6 +193,15 @@ def flag_dk(d, x, y, w, h):
     d.rectangle([x, y + h * 0.42, x + w, y + h * 0.58], fill=(255, 255, 255))
 
 
+def flag_mm(d, x, y, w, h):
+    """Myanmar: yellow-green-red horizontal stripes, white star centre."""
+    d.rectangle([x, y, x + w, y + h / 3], fill=(254, 203, 0), outline=INK, width=1)
+    d.rectangle([x, y + h / 3, x + w, y + 2 * h / 3], fill=(52, 138, 69))
+    d.rectangle([x, y + 2 * h / 3, x + w, y + h], fill=(234, 40, 48))
+    d.rectangle([x, y, x + w, y + h], outline=INK, width=1)
+    star(d, x + w / 2, y + h / 2, h * 0.28, (255, 255, 255))
+
+
 def flag_kr(d, x, y, w, h):
     d.rectangle([x, y, x + w, y + h], fill=(250, 250, 245), outline=INK, width=1)
     d.ellipse([x + w * 0.38, y + h * 0.22, x + w * 0.62, y + h * 0.78],
@@ -236,23 +245,23 @@ def draw_person(d, cx, head_y, r, skin, hair, style, suit, tie, bottom=None, s=1
         d.polygon([(cx - r, head_y - r * 0.25), (cx + r, head_y - r * 0.55),
                    (cx + r + 6 * s, head_y - r * 0.15), (cx - r + 4 * s, head_y + r * 0.05)],
                   fill=hair)
-    elif style == "xi":  # black neat side part
-        d.pieslice([cx - r - 1, head_y - r - 2, cx + r + 1, head_y + r * 0.30],
+    elif style == "xi":  # black neat side part, hairline kept HIGH so the
+        # black hair never covers the brows/eyes (black-on-black reads as
+        # a featureless face at small sizes)
+        d.pieslice([cx - r - 1, head_y - r - 2, cx + r + 1, head_y + r * 0.10],
                    180, 360, fill=hair, outline=INK)
-        d.polygon([(cx - r, head_y - r * 0.30), (cx + r, head_y - r * 0.30),
-                   (cx + r, head_y - r * 0.05), (cx - r, head_y - r * 0.05)],
-                  fill=hair)
-        d.line([cx + 2 * s, head_y - r, cx + 6 * s, head_y - r * 0.30], fill=hair, width=3)
+        d.line([cx + 2 * s, head_y - r, cx + 6 * s, head_y - r * 0.45], fill=hair, width=3)
     else:  # putin: light short, receding
         d.pieslice([cx - r - 1, head_y - r - 2, cx + r + 1, head_y - r * 0.05],
                    180, 360, fill=hair, outline=INK)
-    # brows + eyes + nose + smile
-    d.line([cx - 13 * s, head_y - 9 * s, cx - 5 * s, head_y - 10 * s], fill=INK, width=2)
-    d.line([cx + 5 * s, head_y - 10 * s, cx + 13 * s, head_y - 9 * s], fill=INK, width=2)
-    d.ellipse([cx - 10 * s, head_y - 5 * s, cx - 6 * s, head_y - 1 * s], fill=INK)
-    d.ellipse([cx + 6 * s, head_y - 5 * s, cx + 10 * s, head_y - 1 * s], fill=INK)
+    # brows + eyes + nose + smile (large and high-contrast: faces must
+    # still read at thumbnail size)
+    d.line([cx - 14 * s, head_y - 9 * s, cx - 4 * s, head_y - 11 * s], fill=INK, width=3)
+    d.line([cx + 4 * s, head_y - 11 * s, cx + 14 * s, head_y - 9 * s], fill=INK, width=3)
+    d.ellipse([cx - 11 * s, head_y - 6 * s, cx - 5 * s, head_y + 1 * s], fill=INK)
+    d.ellipse([cx + 5 * s, head_y - 6 * s, cx + 11 * s, head_y + 1 * s], fill=INK)
     d.line([cx, head_y + 1 * s, cx - 1 * s, head_y + 8 * s], fill=(150, 110, 80), width=2)
-    d.arc([cx - 9 * s, head_y + 6 * s, cx + 9 * s, head_y + 18 * s], 20, 160, fill=INK, width=2)
+    d.arc([cx - 10 * s, head_y + 5 * s, cx + 10 * s, head_y + 19 * s], 20, 160, fill=INK, width=3)
 
 
 # ---------------------------------------------------------------- hero scenes
@@ -270,16 +279,16 @@ def scene_apec(d, x, y, w, h):
     # table
     d.rectangle([x, y + h - 46, x + w, y + h], fill=WOOD, outline=INK, width=2)
     d.line([x, y + h - 46, x + w, y + h - 46], fill=GOLD_L, width=2)
-    # leaders
+    # leaders (s=0.95, r=30: heads big enough to read at thumbnail size)
     head_y = y + h - 72
-    s = 0.8 if w < 400 else 1.0
+    s = 0.95 if w < 400 else 1.0
     leaders = [
         (x + int(w * 0.20), "TRUMP", SKIN, (232, 196, 90), "trump", NAVY_DARK, RED_BRIGHT),
         (x + w // 2, "XI", SKIN2, (30, 28, 26), "xi", (24, 24, 24), RED_BRIGHT),
         (x + int(w * 0.80), "PUTIN", SKIN, (214, 200, 170), "putin", (52, 54, 60), BLUE),
     ]
     for cx, name, skin, hair, style, suit, tie in leaders:
-        draw_person(d, cx, head_y, 27, skin, hair, style, suit, tie,
+        draw_person(d, cx, head_y, 30, skin, hair, style, suit, tie,
                     bottom=y + h, s=s)
         # nameplate on the table
         f = SANS_B(11)
@@ -290,30 +299,58 @@ def scene_apec(d, x, y, w, h):
 
 
 def scene_icj(d, x, y, w, h):
-    """World Court: brick court building + scales of justice + 9-6 badge."""
+    """World Court: detailed brick court building (arched windows, clock,
+    columns with capitals, Myanmar flag on the roof) + large scales."""
     d.rectangle([x, y, x + w, y + h], fill=PALE_BLUE)
     # ground
     d.rectangle([x, y + h - 12, x + w, y + h], fill=(190, 200, 190))
-    # tower
+    # tower with arched window
     d.rectangle([x + 52, y + 8, x + 74, y + h - 12], fill=BRICK, outline=INK, width=1)
     d.polygon([(x + 48, y + 8), (x + 78, y + 8), (x + 63, y - 2)], fill=BRICK, outline=INK)
+    d.pieslice([x + 58, y + 14, x + 68, y + 26], 180, 360,
+               fill=(70, 90, 120), outline=INK)
+    d.rectangle([x + 58, y + 20, x + 68, y + 34], fill=(70, 90, 120), outline=INK)
     # main building
     d.rectangle([x + 74, y + 22, x + 250, y + h - 12], fill=BRICK, outline=INK, width=1)
     d.polygon([(x + 70, y + 22), (x + 254, y + 22), (x + 162, y + 8)],
               fill=(150, 78, 50), outline=INK)
+    # clock on the pediment
+    d.ellipse([x + 156, y + 9, x + 168, y + 21], fill=GOLD_L, outline=INK, width=1)
+    d.line([x + 162, y + 15, x + 162, y + 11], fill=INK, width=1)
+    d.line([x + 162, y + 15, x + 165, y + 16], fill=INK, width=1)
+    # flagpole + Myanmar flag on the roof's left corner
+    d.line([x + 74, y + 22, x + 74, y + 2], fill=INK, width=2)
+    flag_mm(d, x + 76, y + 3, 30, 16)
+    # columns with capitals and bases
     for i in range(5):
         cx = x + 92 + i * 34
+        d.rectangle([cx - 6, y + 28, cx + 6, y + 32], fill=(240, 232, 210),
+                    outline=INK, width=1)
         d.rectangle([cx - 4, y + 30, cx + 4, y + h - 12], fill=(240, 232, 210),
                     outline=INK, width=1)
+        d.rectangle([cx - 6, y + h - 16, cx + 6, y + h - 12],
+                    fill=(240, 232, 210), outline=INK, width=1)
+    # arched windows between the columns (door, drawn after, covers the
+    # 4 px sliver of the window behind its frame)
+    for wx in (x + 109, x + 143, x + 177, x + 211):
+        d.pieslice([wx - 7, y + 30, wx + 7, y + 44], 180, 360,
+                   fill=(70, 90, 120), outline=INK)
+        d.rectangle([wx - 7, y + 37, wx + 7, y + 56], fill=(70, 90, 120),
+                    outline=INK)
+    # door
     d.rectangle([x + 150, y + 42, x + 174, y + h - 12], fill=(60, 44, 34), outline=INK, width=1)
-    # scales of justice, standing on the ground at the right
-    bx, by = x + 300, y + h - 52
-    d.line([bx, by, bx, by + 34], fill=GOLD_D, width=3)
-    d.line([bx - 22, by + 4, bx + 22, by + 4], fill=GOLD_D, width=3)
-    d.polygon([(bx - 26, by + 4), (bx - 14, by + 4), (bx - 20, by + 16)], fill=GOLD)
-    d.polygon([(bx + 14, by + 4), (bx + 26, by + 4), (bx + 20, by + 16)], fill=GOLD)
-    d.ellipse([bx - 4, by - 4, bx + 4, by + 4], fill=GOLD, outline=INK, width=1)
-    d.rectangle([bx - 12, by + 34, bx + 12, by + 40], fill=GOLD_D, outline=INK, width=1)
+    # large scales of justice, standing on the ground at the right
+    bx, by = x + 290, y + h - 64
+    d.ellipse([bx - 4, by - 5, bx + 4, by + 3], fill=GOLD, outline=INK, width=1)
+    d.line([bx, by + 2, bx, by + 52], fill=GOLD_D, width=4)
+    d.line([bx - 30, by + 8, bx + 30, by + 8], fill=GOLD_D, width=3)
+    for sgn in (-1, 1):
+        px = bx + sgn * 30
+        d.line([px, by + 8, px - 10, by + 14], fill=GOLD_D, width=2)
+        d.line([px, by + 8, px + 10, by + 14], fill=GOLD_D, width=2)
+        d.pieslice([px - 11, by + 12, px + 11, by + 26], 0, 180,
+                   fill=GOLD, outline=INK)
+    d.rectangle([bx - 14, by + 52, bx + 14, by + 58], fill=GOLD_D, outline=INK, width=1)
     # 9-6 badge
     f = SANS_B(16)
     tw = d.textlength("9–6", font=f)
@@ -358,33 +395,33 @@ def scene_cop31(d, img, x, y, w, h, big=False):
     with the aid figure and Friday close from the deck."""
     d.rectangle([x, y, x + w, y + h], fill=(58, 130, 120))
     if big:
-        # globe
-        cx, cy, r = x + 42, y + h // 2, 24
+        # globe — dominant
+        cx, cy, r = x + 54, y + h // 2, 36
         d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=(70, 140, 200),
                   outline=INK, width=2)
-        d.ellipse([cx - 11, cy - 17, cx + 3, cy - 3], fill=GREEN)
-        d.ellipse([cx - 3, cy + 6, cx + 17, cy + 18], fill=GREEN)
-        # thermometer
-        tx = x + 82
-        d.rounded_rectangle([tx, y + 8, tx + 10, y + h - 14], radius=5,
+        d.ellipse([cx - 20, cy - 26, cx + 0, cy - 8], fill=GREEN)
+        d.ellipse([cx - 6, cy + 6, cx + 22, cy + 26], fill=GREEN)
+        d.ellipse([cx + 8, cy - 28, cx + 24, cy - 12], fill=GREEN)
+        # thermometer — big
+        tx = x + 102
+        d.rounded_rectangle([tx, y + 10, tx + 14, y + h - 16], radius=7,
                             fill=(245, 245, 240), outline=INK, width=1)
-        d.ellipse([tx - 4, y + h - 20, tx + 14, y + h - 2], fill=RED_BRIGHT,
+        d.ellipse([tx - 5, y + h - 24, tx + 19, y + h - 2], fill=RED_BRIGHT,
                   outline=INK, width=1)
-        d.rectangle([tx + 3, y + 14, tx + 7, y + h - 14], fill=RED_BRIGHT)
-        # document
-        dx = x + 106
-        d.rectangle([dx, y + 8, x + w - 10, y + h - 8], fill=(250, 244, 228),
+        d.rectangle([tx + 4, y + 18, tx + 10, y + h - 16], fill=RED_BRIGHT)
+        for ty in (y + 26, y + 46, y + 66, y + 86):
+            d.line([tx + 14, ty, tx + 20, ty], fill=INK, width=1)
+        # document — small, only the three lines (the aid figure and the
+        # Friday close already live in the deck below the panel)
+        dx = x + 132
+        d.rectangle([dx, y + 10, x + w - 10, y + 80], fill=(250, 244, 228),
                     outline=INK, width=1)
-        d.text((dx + 8, y + 12), "DRAFT DEAL · 19 NOV", font=SANS_B(9), fill=INK)
-        d.text((dx + 8, y + 28), "FOSSIL FUELS", font=SANS_B(13), fill=INK)
-        d.line([dx + 8, y + 36, dx + 108, y + 36], fill=RED_BRIGHT, width=3)
-        d.text((dx + 8, y + 46), "$120BN AID CUT", font=SANS_B(12), fill=RED_BRIGHT)
-        d.text((dx + 8, y + 68), "ADAPTATION AID: NO FIGURE", font=SANS_B(10), fill=INK)
-        d.text((dx + 8, y + 86), "TALKS END FRIDAY", font=SANS_B(10), fill=INK)
-        for ly in (104, 116, 128):
-            if ly < h - 14:
-                d.line([dx + 8, y + ly, x + w - 18, y + ly],
-                       fill=(180, 170, 150), width=1)
+        d.text((dx + 8, y + 16), "DRAFT DEAL · 19 NOV", font=SANS_B(10), fill=INK)
+        f_ff = SANS_B(15)
+        d.text((dx + 8, y + 34), "FOSSIL FUELS", font=f_ff, fill=INK)
+        fw = d.textlength("FOSSIL FUELS", font=f_ff)
+        d.line([dx + 8, y + 44, dx + 10 + fw, y + 44], fill=RED_BRIGHT, width=3)
+        d.text((dx + 8, y + 54), "$120BN AID CUT", font=SANS_B(13), fill=RED_BRIGHT)
         return
     # globe
     cx, cy, r = x + 34, y + h // 2, 17
@@ -518,7 +555,9 @@ def scene_seoul(d, img, x, y, w, h):
     d.rounded_rectangle([x + 146, y + 4, x + 172, y + 16], radius=3,
                         fill=(140, 95, 50), outline=INK, width=1)
     d.rectangle([x + 108, y + 32, x + 138, y + 38], fill=(140, 95, 50), outline=INK, width=1)
-    stamp(img, d, x + w - 58, y + h - 10, "OVERTURNED", 8, RED_BRIGHT, angle=-10)
+    # OVERTURNED stamp: small, bottom-right empty sky — clear of the
+    # court roof (left) and the flag (top), inside the scene
+    stamp(img, d, x + w - 35, y + h - 12, "OVERTURNED", 6, RED_BRIGHT, angle=-8)
 
 
 def scene_bogota(d, img, x, y, w, h):
